@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ZCQRUploader</title>
+  <title>ZC Verification</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { 
@@ -34,7 +34,7 @@
 
     #searchBox { padding: 8px; width: 50%; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
     #searchField { padding: 8px; width: 180px; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
-    #searchBtn, #clearBtn, #uploadBtn, #darkModeBtn { 
+    #searchBtn, #clearBtn, #darkModeBtn { 
       padding: 9px 15px; border: none; color: white; cursor: pointer; margin-bottom:10px; border-radius: 5px;
       transition: background 0.3s, color 0.3s;
       white-space: nowrap;
@@ -46,21 +46,8 @@
     #searchBtn:hover { background: #357AE8; }
     #clearBtn { background: #f44336; margin-right: 5px; }
     #clearBtn:hover { background: #d32f2f; }
-    #uploadBtn { background: #FF9800; margin-right: 5px; }
-    #uploadBtn:hover { background: #e68900; }
     #darkModeBtn { background: #333; margin-left: 5px; }
     body.dark #darkModeBtn { background: #666; color: #fff; }
-
-    .spinner {
-      border: 3px solid transparent;
-      border-top: 3px solid white;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      margin-left: 8px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     #validatedMsg { font-weight: bold; display: none; font-size: 22px; margin-top: 10px; text-align: center; }
 
@@ -103,13 +90,7 @@
   <input type="text" id="searchBox" placeholder="Search..." />
   <button id="searchBtn">Search</button>
   <button id="clearBtn">Clear</button>
-
-  <div>
-    <button id="uploadBtn">Upload QR</button>
-    <button id="darkModeBtn">🌙 Dark Mode</button>
-  </div>
-
-  <input type="file" id="uploadQR" accept="image/*" style="display:none;">
+  <button id="darkModeBtn">🌙 Dark Mode</button>
 
   <div id="fields">
     <div class="field"><span class="field-name">DATE RECEIPT :</span><span class="field-value" id="DATE RECEIPT">&nbsp;</span></div>
@@ -131,7 +112,6 @@
   <div id="counter"></div>
   <div id="results"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script>
     const apiURL = "https://script.google.com/macros/s/AKfycbzl2hyJ6R807HCLGRZXPgniqPhuHpxJpSIEzy3cXE-W9Otnr6RUGh5L9TxB7OMgns3i/exec";
     let sheetData = [];
@@ -148,8 +128,6 @@
       dropdown.appendChild(option);
     });
 
-    const uploadBtn = document.getElementById("uploadBtn");
-
     function formatLongDate(value) {
       if (!value) return "\u00A0";
       const date = new Date(value);
@@ -159,9 +137,6 @@
     }
 
     async function loadData() {
-      uploadBtn.disabled = true;
-      uploadBtn.innerHTML = 'Upload QR <span class="spinner upload"></span>';
-
       const statusDiv = document.getElementById("status");
       statusDiv.textContent = "Loading data…";
 
@@ -182,9 +157,6 @@
       } catch(err) {
         statusDiv.textContent = "Failed to load data.";
       }
-
-      uploadBtn.disabled = false;
-      uploadBtn.textContent = 'Upload QR';
     }
 
     function fillFields(row) {
@@ -311,41 +283,6 @@
         oscillator.stop(ctx.currentTime + 0.12);
       } catch(e) {}
     }
-
-    // QR Upload only
-    uploadBtn.addEventListener("click", () => document.getElementById("uploadQR").click());
-    document.getElementById("uploadQR").addEventListener("change", function(){
-      const file = this.files[0];
-      if (!file) return;
-      clearSearch();
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, canvas.width, canvas.height);
-          if (code) {
-            document.getElementById("searchBox").value = code.data;
-            runSearch(true);
-          } else {
-            flashRed();
-            playBeep("error");
-            const validatedMsg = document.getElementById("validatedMsg");
-            validatedMsg.textContent = "NO QR FOUND!";
-            validatedMsg.style.color = "red";
-            validatedMsg.style.display = "block";
-          }
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      this.value = "";
-    });
 
     window.addEventListener("load", loadData);
   </script>
