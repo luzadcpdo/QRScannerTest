@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ZCQRScanner</title>
+  <title>ZCQRUploader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { 
@@ -20,40 +20,23 @@
     #developer { font-size: 14px; color: #555; }
     body.dark #developer { color: #ccc; }
 
-    /* NEW: Records Found below developer */
-    #recordsFound {
-      font-size: 14px;
-      margin-top: 2px;
-    }
-    #recordsFound span {
-      font-weight: bold;
-      color: blue;
-    }
+    #recordsFound { font-size: 14px; margin-top: 2px; }
+    #recordsFound span { font-weight: bold; color: blue; }
 
-    /* Make Total Records value bold, label normal */
-    #totalRecords {
-      font-weight: normal; /* label stays normal */
-    }
-    #totalRecordsValue {
-      font-weight: bold; /* only value is bold */
-    }
+    #totalRecords { font-weight: normal; }
+    #totalRecordsValue { font-weight: bold; }
 
     #sheetInfo { text-align: right; font-size: 14px; color: #555; }
     body.dark #sheetInfo { color: #bbb; }
 
-    #sheetInfo #status {
-      margin-top: 4px;
-      font-weight: bold;
-      color: green;
-    }
+    #sheetInfo #status { margin-top: 4px; font-weight: bold; color: green; }
     body.dark #sheetInfo #status { color: #80e080; }
 
     #searchBox { padding: 8px; width: 50%; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
     #searchField { padding: 8px; width: 180px; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
-    #searchBtn, #clearBtn, #scanBtn, #uploadBtn, #darkModeBtn { 
+    #searchBtn, #clearBtn, #uploadBtn, #darkModeBtn { 
       padding: 9px 15px; border: none; color: white; cursor: pointer; margin-bottom:10px; border-radius: 5px;
       transition: background 0.3s, color 0.3s;
-      position: relative;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
@@ -63,8 +46,6 @@
     #searchBtn:hover { background: #357AE8; }
     #clearBtn { background: #f44336; margin-right: 5px; }
     #clearBtn:hover { background: #d32f2f; }
-    #scanBtn { background: #4CAF50; margin-right: 5px; }
-    #scanBtn:hover { background: #45a049; }
     #uploadBtn { background: #FF9800; margin-right: 5px; }
     #uploadBtn:hover { background: #e68900; }
     #darkModeBtn { background: #333; margin-left: 5px; }
@@ -79,23 +60,9 @@
       margin-left: 8px;
       animation: spin 1s linear infinite;
     }
-    .spinner.scan { border-top-color: #fff; }
-    .spinner.upload { border-top-color: #fff; }
-    body.dark .spinner.scan { border-top-color: #fff; }
-    body.dark .spinner.upload { border-top-color: #fff; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    #validatedMsg { 
-      font-weight: bold; 
-      display: none; 
-      font-size: 22px; 
-      margin-top: 10px;
-      text-align: center;
-    }
+    #validatedMsg { font-weight: bold; display: none; font-size: 22px; margin-top: 10px; text-align: center; }
 
     #fields { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; border: 1px solid #ddd; }
     body.dark #fields { background: #1e1e1e; border-color: #444; }
@@ -116,53 +83,6 @@
     body.dark th { background-color: #333; border-color: #555; }
     body.dark td { border-color: #555; }
     body.dark tr:hover { background-color: #444; }
-
-    /* Scanner popup overlay */
-    #scannerOverlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    #scannerBox {
-      background: #fff;
-      border-radius: 12px;
-      padding: 15px;
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #scannerBox h3 {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-      text-align: center;
-      color: #333;
-    }
-    #video {
-      width: 100% !important;
-      height: auto !important;
-      border-radius: 10px;
-      background: #000;
-    }
-    #canvas { display: none; }
-    #closeScanner {
-      margin-top: 12px;
-      padding: 8px 16px;
-      background: #f44336;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #closeScanner:hover { background: #d32f2f; }
   </style>
 </head>
 <body>
@@ -185,21 +105,10 @@
   <button id="clearBtn">Clear</button>
 
   <div>
-    <button id="scanBtn">Scan QR</button>
     <button id="uploadBtn">Upload QR</button>
     <button id="darkModeBtn">🌙 Dark Mode</button>
   </div>
 
-  <div id="scannerOverlay">
-    <div id="scannerBox">
-      <h3>Scan QR Code</h3>
-      <video id="video" playsinline></video>
-      <canvas id="canvas"></canvas>
-      <button id="closeScanner">Close</button>
-    </div>
-  </div>
-
-  <div id="validatedMsg"></div>
   <input type="file" id="uploadQR" accept="image/*" style="display:none;">
 
   <div id="fields">
@@ -239,7 +148,6 @@
       dropdown.appendChild(option);
     });
 
-    const scanBtn = document.getElementById("scanBtn");
     const uploadBtn = document.getElementById("uploadBtn");
 
     function formatLongDate(value) {
@@ -251,9 +159,7 @@
     }
 
     async function loadData() {
-      scanBtn.disabled = true;
       uploadBtn.disabled = true;
-      scanBtn.innerHTML = 'Scan QR <span class="spinner scan"></span>';
       uploadBtn.innerHTML = 'Upload QR <span class="spinner upload"></span>';
 
       const statusDiv = document.getElementById("status");
@@ -277,13 +183,11 @@
         statusDiv.textContent = "Failed to load data.";
       }
 
-      scanBtn.disabled = false;
       uploadBtn.disabled = false;
-      scanBtn.textContent = 'Scan QR';
       uploadBtn.textContent = 'Upload QR';
     }
 
-     function fillFields(row) {
+    function fillFields(row) {
       FIELDS_TO_SHOW.forEach(field => {
         const el = document.getElementById(field);
         if (!el) return;
@@ -307,10 +211,7 @@
       const counterDiv = document.getElementById("counter");
       resultsDiv.innerHTML = "";
       counterDiv.textContent = `Showing ${data.length} of ${totalRecords} record(s)`;
-
-      // Update Records Found count
       document.getElementById("recordsCount").textContent = data.length;
-
       if (!data.length) return;
 
       const table = document.createElement("table");
@@ -343,7 +244,6 @@
       document.getElementById("results").innerHTML = "";
       document.getElementById("counter").textContent = "";
       document.getElementById("validatedMsg").style.display = "none";
-      // Reset Records Found when cleared
       document.getElementById("recordsCount").textContent = 0;
     }
 
@@ -355,7 +255,6 @@
     function runSearch(fromTyping = false) {
       clearResults();
       clearFields();
-
       if (!sheetData.length) return;
       const query = document.getElementById("searchBox").value.trim().toLowerCase();
       const selectedField = document.getElementById("searchField").value;
@@ -413,74 +312,23 @@
       } catch(e) {}
     }
 
-    // QR Scanner
-    const scannerOverlay = document.getElementById("scannerOverlay");
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    let scanning = false;
-    let stream = null;
-
-    scanBtn.addEventListener("click", async () => {
-      scannerOverlay.style.display = "flex";
-      clearSearch();
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.play();
-        scanning = true;
-        requestAnimationFrame(tick);
-      } catch(e) {
-        alert("Camera access denied or unavailable.");
-      }
-    });
-
-    document.getElementById("closeScanner").addEventListener("click", () => {
-      scannerOverlay.style.display = "none";
-      scanning = false;
-      if (stream) stream.getTracks().forEach(track => track.stop());
-    });
-
-    function tick() {
-      if (!scanning) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        if (code) {
-          scanning = false;
-          scannerOverlay.style.display = "none";
-          if (stream) stream.getTracks().forEach(track => track.stop());
-          document.getElementById("searchBox").value = code.data;
-          runSearch(true);
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
-    // QR Upload
+    // QR Upload only
     uploadBtn.addEventListener("click", () => document.getElementById("uploadQR").click());
-
     document.getElementById("uploadQR").addEventListener("change", function(){
       const file = this.files[0];
       if (!file) return;
-
       clearSearch();
-
       const reader = new FileReader();
       reader.onload = e => {
         const img = new Image();
         img.onload = () => {
+          const canvas = document.createElement("canvas");
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const code = jsQR(imageData.data, canvas.width, canvas.height);
-
           if (code) {
             document.getElementById("searchBox").value = code.data;
             runSearch(true);
@@ -503,4 +351,3 @@
   </script>
 </body>
 </html>
-
