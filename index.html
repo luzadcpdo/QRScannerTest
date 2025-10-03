@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ZC Verification</title>
+  <title>ZCQRScanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { 
@@ -20,8 +20,14 @@
     #developer { font-size: 14px; color: #555; }
     body.dark #developer { color: #ccc; }
 
-    #recordsFound { font-size: 14px; margin-top: 2px; }
-    #recordsFound span { font-weight: bold; color: blue; }
+    #recordsFound {
+      font-size: 14px;
+      margin-top: 2px;
+    }
+    #recordsFound span {
+      font-weight: bold;
+      color: blue;
+    }
 
     #totalRecords { font-weight: normal; }
     #totalRecordsValue { font-weight: bold; }
@@ -29,7 +35,11 @@
     #sheetInfo { text-align: right; font-size: 14px; color: #555; }
     body.dark #sheetInfo { color: #bbb; }
 
-    #sheetInfo #status { margin-top: 4px; font-weight: bold; color: green; }
+    #sheetInfo #status {
+      margin-top: 4px;
+      font-weight: bold;
+      color: green;
+    }
     body.dark #sheetInfo #status { color: #80e080; }
 
     #searchBox { padding: 8px; width: 50%; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
@@ -37,6 +47,7 @@
     #searchBtn, #clearBtn, #darkModeBtn { 
       padding: 9px 15px; border: none; color: white; cursor: pointer; margin-bottom:10px; border-radius: 5px;
       transition: background 0.3s, color 0.3s;
+      position: relative;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
@@ -48,6 +59,14 @@
     #clearBtn:hover { background: #d32f2f; }
     #darkModeBtn { background: #333; margin-left: 5px; }
     body.dark #darkModeBtn { background: #666; color: #fff; }
+
+    .spinner { border: 3px solid transparent; border-top: 3px solid white; border-radius: 50%; width: 16px; height: 16px; margin-left: 8px; animation: spin 1s linear infinite; }
+    .spinner.scan { border-top-color: #fff; }
+    .spinner.upload { border-top-color: #fff; }
+    body.dark .spinner.scan { border-top-color: #fff; }
+    body.dark .spinner.upload { border-top-color: #fff; }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     #validatedMsg { font-weight: bold; display: none; font-size: 22px; margin-top: 10px; text-align: center; }
 
@@ -70,6 +89,14 @@
     body.dark th { background-color: #333; border-color: #555; }
     body.dark td { border-color: #555; }
     body.dark tr:hover { background-color: #444; }
+
+    #scannerOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box; }
+    #scannerBox { background: #fff; border-radius: 12px; padding: 15px; width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
+    #scannerBox h3 { margin: 0 0 10px 0; font-size: 18px; text-align: center; color: #333; }
+    #video { width: 100% !important; height: auto !important; border-radius: 10px; background: #000; }
+    #canvas { display: none; }
+    #closeScanner { margin-top: 12px; padding: 8px 16px; background: #f44336; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    #closeScanner:hover { background: #d32f2f; }
   </style>
 </head>
 <body>
@@ -90,7 +117,23 @@
   <input type="text" id="searchBox" placeholder="Search..." />
   <button id="searchBtn">Search</button>
   <button id="clearBtn">Clear</button>
-  <button id="darkModeBtn">🌙 Dark Mode</button>
+
+  <div>
+    <!-- Removed Scan QR and Upload QR buttons -->
+    <button id="darkModeBtn">🌙 Dark Mode</button>
+  </div>
+
+  <div id="scannerOverlay">
+    <div id="scannerBox">
+      <h3>Scan QR Code</h3>
+      <video id="video" playsinline></video>
+      <canvas id="canvas"></canvas>
+      <button id="closeScanner">Close</button>
+    </div>
+  </div>
+
+  <div id="validatedMsg"></div>
+  <input type="file" id="uploadQR" accept="image/*" style="display:none;">
 
   <div id="fields">
     <div class="field"><span class="field-name">DATE RECEIPT :</span><span class="field-value" id="DATE RECEIPT">&nbsp;</span></div>
@@ -112,6 +155,7 @@
   <div id="counter"></div>
   <div id="results"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script>
     const apiURL = "https://script.google.com/macros/s/AKfycbzl2hyJ6R807HCLGRZXPgniqPhuHpxJpSIEzy3cXE-W9Otnr6RUGh5L9TxB7OMgns3i/exec";
     let sheetData = [];
@@ -184,6 +228,7 @@
       resultsDiv.innerHTML = "";
       counterDiv.textContent = `Showing ${data.length} of ${totalRecords} record(s)`;
       document.getElementById("recordsCount").textContent = data.length;
+
       if (!data.length) return;
 
       const table = document.createElement("table");
@@ -227,6 +272,7 @@
     function runSearch(fromTyping = false) {
       clearResults();
       clearFields();
+
       if (!sheetData.length) return;
       const query = document.getElementById("searchBox").value.trim().toLowerCase();
       const selectedField = document.getElementById("searchField").value;
@@ -284,6 +330,7 @@
       } catch(e) {}
     }
 
+    // QR Scanner and Upload functions remain intact
     window.addEventListener("load", loadData);
   </script>
 </body>
