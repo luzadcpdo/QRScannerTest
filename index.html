@@ -24,10 +24,7 @@
       font-size: 14px;
       margin-top: 2px;
     }
-    #recordsFound span {
-      font-weight: bold;
-      color: blue;
-    }
+    #recordsFound span { font-weight: bold; color: blue; }
 
     #totalRecords { font-weight: normal; }
     #totalRecordsValue { font-weight: bold; }
@@ -35,11 +32,7 @@
     #sheetInfo { text-align: right; font-size: 14px; color: #555; }
     body.dark #sheetInfo { color: #bbb; }
 
-    #sheetInfo #status {
-      margin-top: 4px;
-      font-weight: bold;
-      color: green;
-    }
+    #sheetInfo #status { margin-top: 4px; font-weight: bold; color: green; }
     body.dark #sheetInfo #status { color: #80e080; }
 
     #searchBox { padding: 8px; width: 50%; margin-right: 10px; margin-bottom:10px; min-width: 120px; }
@@ -60,15 +53,13 @@
     #darkModeBtn { background: #333; margin-left: 5px; }
     body.dark #darkModeBtn { background: #666; color: #fff; }
 
-    .spinner { border: 3px solid transparent; border-top: 3px solid white; border-radius: 50%; width: 16px; height: 16px; margin-left: 8px; animation: spin 1s linear infinite; }
-    .spinner.scan { border-top-color: #fff; }
-    .spinner.upload { border-top-color: #fff; }
-    body.dark .spinner.scan { border-top-color: #fff; }
-    body.dark .spinner.upload { border-top-color: #fff; }
-
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    #validatedMsg { font-weight: bold; display: none; font-size: 22px; margin-top: 10px; text-align: center; }
+    #validatedMsg { 
+      font-weight: bold; 
+      display: none; 
+      font-size: 22px; 
+      margin-top: 10px;
+      text-align: center;
+    }
 
     #fields { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; border: 1px solid #ddd; }
     body.dark #fields { background: #1e1e1e; border-color: #444; }
@@ -89,14 +80,6 @@
     body.dark th { background-color: #333; border-color: #555; }
     body.dark td { border-color: #555; }
     body.dark tr:hover { background-color: #444; }
-
-    #scannerOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box; }
-    #scannerBox { background: #fff; border-radius: 12px; padding: 15px; width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
-    #scannerBox h3 { margin: 0 0 10px 0; font-size: 18px; text-align: center; color: #333; }
-    #video { width: 100% !important; height: auto !important; border-radius: 10px; background: #000; }
-    #canvas { display: none; }
-    #closeScanner { margin-top: 12px; padding: 8px 16px; background: #f44336; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-    #closeScanner:hover { background: #d32f2f; }
   </style>
 </head>
 <body>
@@ -114,26 +97,12 @@
 
   <h2>LUZAD ZONING CERTIFICATION VERIFICATION @ CPDO2025</h2>
   <select id="searchField"></select>
-  <input type="text" id="searchBox" placeholder="Search..." />
-  <button id="searchBtn">Search</button>
+  <input type="text" id="searchBox" placeholder="Search..." disabled />
+  <button id="searchBtn" disabled>Search</button>
   <button id="clearBtn">Clear</button>
-
-  <div>
-    <!-- Removed Scan QR and Upload QR buttons -->
-    <button id="darkModeBtn">🌙 Dark Mode</button>
-  </div>
-
-  <div id="scannerOverlay">
-    <div id="scannerBox">
-      <h3>Scan QR Code</h3>
-      <video id="video" playsinline></video>
-      <canvas id="canvas"></canvas>
-      <button id="closeScanner">Close</button>
-    </div>
-  </div>
+  <button id="darkModeBtn">🌙 Dark Mode</button>
 
   <div id="validatedMsg"></div>
-  <input type="file" id="uploadQR" accept="image/*" style="display:none;">
 
   <div id="fields">
     <div class="field"><span class="field-name">DATE RECEIPT :</span><span class="field-value" id="DATE RECEIPT">&nbsp;</span></div>
@@ -172,6 +141,9 @@
       dropdown.appendChild(option);
     });
 
+    const searchBox = document.getElementById("searchBox");
+    const searchBtn = document.getElementById("searchBtn");
+
     function formatLongDate(value) {
       if (!value) return "\u00A0";
       const date = new Date(value);
@@ -182,6 +154,9 @@
 
     async function loadData() {
       const statusDiv = document.getElementById("status");
+
+      searchBox.disabled = true;
+      searchBtn.disabled = true;
       statusDiv.textContent = "Loading data…";
 
       try {
@@ -197,9 +172,15 @@
         document.getElementById("totalRecordsValue").textContent = totalRecords;
         document.getElementById("sheetName").textContent = rawData.spreadsheetName || "Unknown Sheet";
         document.getElementById("recordsCount").textContent = 0;
+
         statusDiv.textContent = "Data loaded. You can now search.";
+
+        searchBox.disabled = false;
+        searchBtn.disabled = false;
       } catch(err) {
         statusDiv.textContent = "Failed to load data.";
+        searchBox.disabled = true;
+        searchBtn.disabled = true;
       }
     }
 
@@ -227,6 +208,7 @@
       const counterDiv = document.getElementById("counter");
       resultsDiv.innerHTML = "";
       counterDiv.textContent = `Showing ${data.length} of ${totalRecords} record(s)`;
+
       document.getElementById("recordsCount").textContent = data.length;
 
       if (!data.length) return;
@@ -274,8 +256,8 @@
       clearFields();
 
       if (!sheetData.length) return;
-      const query = document.getElementById("searchBox").value.trim().toLowerCase();
-      const selectedField = document.getElementById("searchField").value;
+      const query = searchBox.value.trim().toLowerCase();
+      const selectedField = dropdown.value;
       const validatedMsg = document.getElementById("validatedMsg");
 
       if (!query) {
@@ -301,21 +283,21 @@
     }
 
     function clearSearch() {
-      document.getElementById("searchBox").value = "";
+      searchBox.value = "";
       clearResults();
       clearFields();   
     }
 
     let typingTimer;
     const typingDelay = 1000; 
-    document.getElementById("searchBox").addEventListener("input", () => {
+    searchBox.addEventListener("input", () => {
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => { runSearch(true); }, typingDelay);
     });
 
-    document.getElementById("searchBtn").addEventListener("click", () => runSearch(true));
-    document.getElementById("clearBtn").addEventListener("click", clearSearch);
-    document.getElementById("darkModeBtn").addEventListener("click", () => document.body.classList.toggle("dark"));
+    searchBtn.addEventListener("click", () => runSearch(true));
+    clearBtn.addEventListener("click", clearSearch);
+    darkModeBtn.addEventListener("click", () => document.body.classList.toggle("dark"));
 
     function playBeep(type="success") {
       try {
@@ -330,7 +312,6 @@
       } catch(e) {}
     }
 
-    // QR Scanner and Upload functions remain intact
     window.addEventListener("load", loadData);
   </script>
 </body>
